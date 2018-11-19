@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 public class AuctionHouseImp implements AuctionHouse {
     private BuyerInfo buyerInf = new BuyerInfo();
     private SellerInfo sellerInf = new SellerInfo();
-    private HashSet<Integer, Lot> lotList = new HashSet<>();
+    private List<CatalogueEntry> lotList = new ArrayList();
     private static Logger logger = Logger.getLogger("auctionhouse");
     private static final String LS = System.lineSeparator();
     
@@ -81,11 +81,15 @@ public class AuctionHouseImp implements AuctionHouse {
         if(!sellerInf.sellerInfo.containsKey(sellerName)) {
             return Status.error("User does not exist");
         }
-        if (lotList.containsKey(number)) {
-            return Status.error("Lot already exists");
+        boolean exists = false;
+        for (int i = 0; i < lotList.size(); i++) {
+            if  (lotList.get(i).equals(new CatalogueEntry(number, description, LotStatus.UNSOLD))) {
+                exists = true;
+                return Status.error("This lot already exists");
+            }
         }
 
-        lotList.put(number, new Lot(sellerName, number, description, reservePrice));
+        lotList.add(new CatalogueEntry(number, description , LotStatus.UNSOLD));
         return Status.OK();    
     }
 
@@ -93,15 +97,23 @@ public class AuctionHouseImp implements AuctionHouse {
         logger.fine(startBanner("viewCatalog"));
         
         List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>();
+        catalogue = lotList;
         logger.fine("Catalogue: " + catalogue.toString());
         return catalogue;
     }
 
+    //Requires further implementation.
     public Status noteInterest(
             String buyerName,
             int lotNumber) {
         logger.fine(startBanner("noteInterest " + buyerName + " " + lotNumber));
-        
+        if(!buyerInf.buyerList.containsKey(buyerName)) {
+            return Status.error("User does not exist. Please register.");
+        }
+
+        if(!lotList.containsKey){
+
+        }
         return Status.OK();   
     }
 

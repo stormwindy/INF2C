@@ -11,6 +11,7 @@ __________________        ____________________________________________
 package auctionhouse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -22,9 +23,10 @@ import java.util.logging.Logger;
 public class AuctionHouseImp implements AuctionHouse {
     private BuyerInfo buyerInf = new BuyerInfo();
     private SellerInfo sellerInf = new SellerInfo();
-    private List<CatalogueEntry> lotList = new ArrayList();
+    private List<CatalogueEntry> lotList = new ArrayList<>();
     private static Logger logger = Logger.getLogger("auctionhouse");
     private static final String LS = System.lineSeparator();
+    private static List<ArrayList<String>> interestedNodes = new ArrayList<>();
     
     private String startBanner(String messageName) {
         return  LS 
@@ -65,7 +67,7 @@ public class AuctionHouseImp implements AuctionHouse {
             if(!address.matches("[a-z A-Z]")) {
                 return Status.error("Address Invalid.");
             }
-            if(bankAccount.matches("[^a-z A-Z0-9]") || bankAuthCode.matches("[^a-z A-Z0-9]")) {
+            if(bankAccount.matches("[^a-z A-Z0-9]")) {
                 return Status.error("Account or authentication code invalid.");
             }
         logger.fine(startBanner("registerSeller " + name));
@@ -87,33 +89,38 @@ public class AuctionHouseImp implements AuctionHouse {
                 exists = true;
                 return Status.error("This lot already exists");
             }
+            if (lotList.contains(i)) {
+                return Status.error("This lot number already exists. Please choose a different number");
+            }
         }
 
-        lotList.add(new CatalogueEntry(number, description , LotStatus.UNSOLD));
+        lotList.add(number, new CatalogueEntry(number, description , LotStatus.UNSOLD));
         return Status.OK();    
     }
 
+    //TODO: Further implementation required.
     public List<CatalogueEntry> viewCatalogue() {
         logger.fine(startBanner("viewCatalog"));
-        
         List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>();
         catalogue = lotList;
         logger.fine("Catalogue: " + catalogue.toString());
         return catalogue;
     }
 
-    //Requires further implementation.
+    //TODO: Requires further implementation.
     public Status noteInterest(
             String buyerName,
             int lotNumber) {
+        if (!buyerInf.buyerExists(buyerName)) {
+            Status.error("Buyer not registered. Please register");
+        }
+
+        if(!lotList.contains(lotNumber)) {
+            Status.error("This lot does not exist.");
+        }
+
+        interestedNodes.get(lotNumber).add(buyerName);
         logger.fine(startBanner("noteInterest " + buyerName + " " + lotNumber));
-        if(!buyerInf.buyerList.containsKey(buyerName)) {
-            return Status.error("User does not exist. Please register.");
-        }
-
-        if(!lotList.containsKey){
-
-        }
         return Status.OK();   
     }
 

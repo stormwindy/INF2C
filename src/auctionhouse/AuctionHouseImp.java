@@ -24,9 +24,11 @@ public class AuctionHouseImp implements AuctionHouse {
     private BuyerInfo buyerInf = new BuyerInfo();
     private SellerInfo sellerInf = new SellerInfo();
     private List<CatalogueEntry> lotList = new ArrayList<>();
+    private HashMap<Integer, AuctionProcess> currentAuctions = new HashMap();
     private static Logger logger = Logger.getLogger("auctionhouse");
     private static final String LS = System.lineSeparator();
-    private static List<ArrayList<String>> interestedNodes = new ArrayList<>();
+    static List<ArrayList<String>> interestedNodes = new ArrayList<>();
+    private Parameters parameters;
     
     private String startBanner(String messageName) {
         return  LS 
@@ -36,7 +38,7 @@ public class AuctionHouseImp implements AuctionHouse {
     }
    
     public AuctionHouseImp(Parameters parameters) {
-
+        this.parameters = parameters;
     }
 
     public Status registerBuyer(
@@ -85,7 +87,8 @@ public class AuctionHouseImp implements AuctionHouse {
         }
         boolean exists = false;
         for (int i = 0; i < lotList.size(); i++) {
-            if  (lotList.get(i).equals(new CatalogueEntry(number, description, LotStatus.UNSOLD))) {
+            if  (lotList.get(i).equals(new CatalogueEntry(number, description, LotStatus.UNSOLD,
+                    reservePrice,sellerName))) {
                 exists = true;
                 return Status.error("This lot already exists");
             }
@@ -94,11 +97,10 @@ public class AuctionHouseImp implements AuctionHouse {
             }
         }
 
-        lotList.add(number, new CatalogueEntry(number, description , LotStatus.UNSOLD));
+        lotList.add(number, new CatalogueEntry(number, description , LotStatus.UNSOLD, reservePrice, sellerName));
         return Status.OK();    
     }
 
-    //TODO: Further implementation required.
     public List<CatalogueEntry> viewCatalogue() {
         logger.fine(startBanner("viewCatalog"));
         List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>();
@@ -107,7 +109,6 @@ public class AuctionHouseImp implements AuctionHouse {
         return catalogue;
     }
 
-    //TODO: Requires further implementation.
     public Status noteInterest(
             String buyerName,
             int lotNumber) {
@@ -128,25 +129,39 @@ public class AuctionHouseImp implements AuctionHouse {
             String auctioneerName,
             String auctioneerAddress,
             int lotNumber) {
+
+        if (!lotList.contains(lotNumber)) {
+            Status.error("This lot does not exist.");
+        }
+        CatalogueEntry currentLot = lotList.get(lotNumber);
+        AuctionProcess process = new AuctionProcess(currentLot, interestedNodes.get(lotNumber), parameters,
+                                                    buyerInf, sellerInf);
+        currentAuctions.put(lotNumber, process);
         logger.fine(startBanner("openAuction " + auctioneerName + " " + lotNumber));
         
-        return Status.OK();
+        return process.openAuction();
     }
 
     public Status makeBid(
             String buyerName,
             int lotNumber,
             Money bid) {
+
+        if(!currentAuctions.containsKey(lotNumber)) {
+            Status.error("This lot either does not exist or under auction process.");
+        }
+
         logger.fine(startBanner("makeBid " + buyerName + " " + lotNumber + " " + bid));
 
-        return Status.OK();    
+        return currentAuctions.get(lotNumber).makeBid(bid, buyerName);
     }
 
     public Status closeAuction(
             String auctioneerName,
             int lotNumber) {
         logger.fine(startBanner("closeAuction " + auctioneerName + " " + lotNumber));
- 
-        return Status.OK();  
+
+        return Status.OK();
     }
+
 }

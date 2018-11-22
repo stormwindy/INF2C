@@ -43,20 +43,24 @@ public class BuyerInfo {
         return Status.error("User already exists.");
     }
 
-    public Bool buyerExists(String name) {
+    public boolean buyerExists(String name) {
         if (buyerList.containsKey(name)) {
             return true;
         }
         return false;
     }
 
-    public int getBankAccount(String name) {
+    public String getBankAccount(String name) {
         if(buyerList.containsKey(name)) {
             Buyer a = buyerList.get(name);
             return a.bankAccount;
         } else {
-            return -1; //No bank details
+            return ""; //No bank details
         }
+    }
+
+    public String getAuthCode(String name) {
+       return buyerList.get(name).authCode;
     }
 }
 

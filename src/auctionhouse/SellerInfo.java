@@ -56,23 +56,25 @@
 package auctionhouse;
 
 import java.util.HashMap;
-
 import javax.naming.Name;
-import javax.net.ssl.SSLEngineResult.Status;
 
 public class SellerInfo {
-    HashMap<String, Seller> sellerInfo = new HashMap<>();
+    static HashMap<String, Seller> sellerInfo = new HashMap<>();
 
     public Status registerNewSeller(String name, String bankAccount, String address) {
         if (!sellerInfo.containsKey(name)) {
             sellerInfo.put(name, new Seller(name, bankAccount, address));
-            return Status.OK;
+            return Status.OK();
         }
-        return Status.ERROR; 
+        return Status.error("This seller already exists.");
+    }
+
+    public String getAddress(String name) {
+        return sellerInfo.get(name).address;
     }
 }
 
-private class Seller{
+class Seller{
     String name;
     String bankAccount;
     String address;
@@ -82,4 +84,5 @@ private class Seller{
         this.bankAccount = bankAccount;
         this.address = address;
     }
+
 }

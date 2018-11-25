@@ -75,7 +75,7 @@ public class Money implements Comparable<Money> {
     
     /** Tests whether the value of the current instance of Money is less than or equal to the value of some supplied instance of Money.
 	 * @param m The instance of Money to be compared to the current instance of Money.
-	 * @return 1 if the current instance of Money's value is smaller or equal to m's value.
+	 * @return true if the current instance of Money's value is smaller or equal to m's value otherwise false.
 	*/
     public Boolean lessEqual(Money m) {
         return compareTo(m) <= 0;
@@ -84,7 +84,7 @@ public class Money implements Comparable<Money> {
     /** Tests whether the value of the current instance of Money equal to another instance of Money.
      * ALso overrides the "equals" method of the comparable interface.
 	 * @param o The object (instance of Money) to be compared to the current object.
-	 * @return 1 if the instances of the Money object are equal.
+	 * @return true if the instances of the Money object are equal otherwise false.
 	*/
     @Override
     public boolean equals(Object o) {
@@ -97,6 +97,5 @@ public class Money implements Comparable<Money> {
     public int hashCode() {
         return Long.hashCode(getNearestPence(value));
     }
-      
 
 }

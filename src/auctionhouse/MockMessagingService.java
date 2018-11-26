@@ -58,6 +58,7 @@ public class MockMessagingService implements MessagingService {
         String s = makeOpenedEventString(address, lotNumber);
         logger.finer(s); 
         actualEvents.add(s);
+        logger.finer(actualEvents.toString());
     }
     
     public void bidAccepted(String address, int lotNumber,Money amount) {
@@ -95,7 +96,7 @@ public class MockMessagingService implements MessagingService {
     }
     
     public void verify() {
-
+    	logger.finer(actualEvents.toString());
         assertEquals(expectedEvents, actualEvents);
         expectedEvents.clear();
         actualEvents.clear();

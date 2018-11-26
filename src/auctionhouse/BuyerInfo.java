@@ -25,16 +25,16 @@
 
 
 package auctionhouse;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.logging.Logger;
 
  public class BuyerInfo {
-   static Map<String, Buyer> buyerList;
+   public HashMap<String, Buyer> buyerList = new HashMap<>();
+   HashMap<Integer, ArrayList<String>> interestedNodes = new HashMap<>();
    private static Logger logger = Logger.getLogger("auctionhouse");
    public BuyerInfo() {
-       buyerList = new HashMap<>();
+      
    }
 
     public Status registerNewBuyer(String name, String address, String bankAccount, String authCode) {

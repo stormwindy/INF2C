@@ -18,7 +18,7 @@ public class AuctionProcess {
     String sellerName;
     ArrayList<String> interested;
     HashMap<Integer, Money> reservePrices = new HashMap<Integer, Money>();
-    static MockMessagingService msgServiceAuction = new MockMessagingService();
+    MockMessagingService msgServiceAuction;
     private static Logger logger = Logger.getLogger("auctionhouse");
 
     public AuctionProcess(CatalogueEntry entry, ArrayList<String> interested,
@@ -31,6 +31,7 @@ public class AuctionProcess {
             buyerInfo = buyInf;
             sellerInf = selInf;
             sellerName = sellerInf.getName(entry.lotNumber);
+            msgServiceAuction = new MockMessagingService();
     }
 
     public Status openAuction() {
@@ -39,15 +40,19 @@ public class AuctionProcess {
             return Status.error("This auction is either already in auction or sold.");
         }
 
+        for (int i = 0; i < interested.size(); i++) {
+        	logger.finer(buyerInfo.buyerList.get(interested.get(i)).address);
+        	msgServiceAuction.auctionOpened(buyerInfo.buyerList.get(interested.get(i)).address, entry.lotNumber);
+        }
+        msgServiceAuction.auctionOpened(sellerInf.getAddress(sellerName), entry.lotNumber);
         logger.finer("Open Auction complete");
         entry.status = LotStatus.IN_AUCTION;
-        sendMsg("open");
         return Status.OK();
     }
 
     public Status makeBid(Money bid, String buyerName) {
         logger.finer("Entering");
-        if (!AuctionHouseImp.interestedNodes.get(entry.lotNumber).contains(buyerName)) {
+        if (!buyerInfo.interestedNodes.get(entry.lotNumber).contains(buyerName)) {
             return Status.error("This user is not interested in the lot.");
         }
 
@@ -101,16 +106,17 @@ public class AuctionProcess {
         logger.finer("For loop");
         for (int i = 0; i < interested.size(); i++) {
             String name = interested.get(i);
-            String address = BuyerInfo.buyerList.get(name).address;
+            String address = buyerInfo.buyerList.get(name).address;
             addresses[i] = address;
         }
         logger.finer("End loop");
+
         switch (type) {
 
             case "open": for (String address : addresses) {
                 logger.finer("Type" + type + "\t expected: open");
                 msgServiceAuction.auctionOpened(address, entry.lotNumber);
-                msgServiceAuction.auctionOpened(sellerInf.getAddress(sellerName), entry.lotNumber);
+                
             }
             case "bid":for (String address : addresses) {
                 logger.finer("Type" + type + "\t expected: bid");

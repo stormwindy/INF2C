@@ -56,7 +56,6 @@
 package auctionhouse;
 
 import java.util.HashMap;
-import javax.naming.Name;
 import java.util.logging.Logger;
 public class SellerInfo {
     private static Logger logger = Logger.getLogger("auctionhouse");

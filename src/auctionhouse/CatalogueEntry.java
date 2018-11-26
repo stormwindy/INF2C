@@ -13,15 +13,12 @@ public class CatalogueEntry {
     public int lotNumber;
     public String description;
     public LotStatus status;
-    public Money reserve;
-    public String sellerName;
+
     
-    public CatalogueEntry(int lotNumber, String description, LotStatus status, Money reserve, String sellerName) {
+    public CatalogueEntry(int lotNumber, String description, LotStatus status) {
         this.lotNumber = lotNumber;
         this.description = description;
         this.status = status;
-        this.reserve = reserve;
-        this.sellerName = sellerName;
     }
 
     @Override

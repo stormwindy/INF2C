@@ -28,14 +28,17 @@ package auctionhouse;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Logger;
 
-public class BuyerInfo {
+ public class BuyerInfo {
    static Map<String, Buyer> buyerList;
+   private static Logger logger = Logger.getLogger("auctionhouse");
    public BuyerInfo() {
        buyerList = new HashMap<>();
    }
 
     public Status registerNewBuyer(String name, String address, String bankAccount, String authCode) {
+       logger.finer("Entering");
         if(!buyerList.containsKey(name)) {
             buyerList.put(name, new Buyer(name, address, bankAccount, authCode));
             return Status.OK();
@@ -44,6 +47,7 @@ public class BuyerInfo {
     }
 
     public boolean buyerExists(String name) {
+        logger.finer("Entering");
         if (buyerList.containsKey(name)) {
             return true;
         }
@@ -51,10 +55,12 @@ public class BuyerInfo {
     }
 
     public String getBankAccount(String name) {
+        logger.finer("Entering");
         if(buyerList.containsKey(name)) {
             Buyer a = buyerList.get(name);
             return a.bankAccount;
         } else {
+            logger.finer("No accounts found");
             return ""; //No bank details
         }
     }

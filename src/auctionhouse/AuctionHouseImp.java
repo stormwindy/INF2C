@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -23,11 +24,12 @@ import java.util.logging.Logger;
 public class AuctionHouseImp implements AuctionHouse {
     private BuyerInfo buyerInf = new BuyerInfo();
     private SellerInfo sellerInf = new SellerInfo();
-    private List<CatalogueEntry> lotList = new ArrayList<>();
-    private HashMap<Integer, AuctionProcess> currentAuctions = new HashMap();
+    private HashMap<Integer, CatalogueEntry> lotList = new HashMap<Integer, CatalogueEntry>();
+    private HashMap<Integer, AuctionProcess> currentAuctions = new HashMap<Integer, AuctionProcess>();
     private static Logger logger = Logger.getLogger("auctionhouse");
     private static final String LS = System.lineSeparator();
     static List<ArrayList<String>> interestedNodes = new ArrayList<>();
+    private HashMap<Integer, Money> reservePrices = new HashMap<Integer, Money>();
     private Parameters parameters;
     
     private String startBanner(String messageName) {
@@ -46,7 +48,7 @@ public class AuctionHouseImp implements AuctionHouse {
             String address,
             String bankAccount,
             String bankAuthCode) {
-        logger.fine(startBanner("registerBuyer " + name));
+        logger.finer("Entering");
         if(!name.matches("[a-z A-Z]")) {
             return Status.error("Name invalid");
         }
@@ -56,6 +58,7 @@ public class AuctionHouseImp implements AuctionHouse {
         if(bankAccount.matches("[^a-z A-Z0-9]") || bankAuthCode.matches("[^a-z A-Z0-9]")) {
             return Status.error("Account or authentication code invalid.");
         }
+        logger.fine(startBanner("registerBuyer " + name));
         return buyerInf.registerNewBuyer(name, address, bankAccount, bankAuthCode);
     }
 
@@ -63,6 +66,7 @@ public class AuctionHouseImp implements AuctionHouse {
             String name,
             String address,
             String bankAccount) {
+        logger.finer("Entering");
             if(!name.matches("[a-z A-Z]")) {
                 return Status.error("Name invalid");
             }
@@ -81,30 +85,32 @@ public class AuctionHouseImp implements AuctionHouse {
             int number,
             String description,
             Money reservePrice) {
-        logger.fine(startBanner("addLot " + sellerName + " " + number));
+        logger.finer("Entering");
         if(!sellerInf.sellerInfo.containsKey(sellerName)) {
             return Status.error("User does not exist");
         }
-        boolean exists = false;
+        logger.finer("For loop");
         for (int i = 0; i < lotList.size(); i++) {
-            if  (lotList.get(i).equals(new CatalogueEntry(number, description, LotStatus.UNSOLD,
-                    reservePrice,sellerName))) {
-                exists = true;
+            if  (lotList.get(i).equals(new CatalogueEntry(number, description, LotStatus.UNSOLD
+                    ))) {
                 return Status.error("This lot already exists");
             }
-            if (lotList.contains(i)) {
+            if (lotList.containsKey(i)) {
                 return Status.error("This lot number already exists. Please choose a different number");
             }
         }
-
-        lotList.add(number, new CatalogueEntry(number, description , LotStatus.UNSOLD, reservePrice, sellerName));
+        logger.finer("End loop");
+        logger.fine(startBanner("addLot " + sellerName + " " + number));
+        lotList.put(number, (new CatalogueEntry(number, description , LotStatus.UNSOLD)));
+        logger.finer("Adding reserve price");
+        reservePrices.put(number, reservePrice);
+        sellerInf.addLottoSeller(number, sellerName);
         return Status.OK();    
     }
 
     public List<CatalogueEntry> viewCatalogue() {
         logger.fine(startBanner("viewCatalog"));
-        List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>();
-        catalogue = lotList;
+        List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>(lotList.values());
         logger.fine("Catalogue: " + catalogue.toString());
         return catalogue;
     }
@@ -112,11 +118,12 @@ public class AuctionHouseImp implements AuctionHouse {
     public Status noteInterest(
             String buyerName,
             int lotNumber) {
+        logger.finer("Entering");
         if (!buyerInf.buyerExists(buyerName)) {
             Status.error("Buyer not registered. Please register");
         }
-
-        if(!lotList.contains(lotNumber)) {
+        
+        if(!lotList.containsKey(lotNumber)) {
             Status.error("This lot does not exist.");
         }
 
@@ -129,13 +136,13 @@ public class AuctionHouseImp implements AuctionHouse {
             String auctioneerName,
             String auctioneerAddress,
             int lotNumber) {
-
-        if (!lotList.contains(lotNumber)) {
+        logger.finer("Entering");
+        if (!lotList.containsKey(lotNumber)) {
             Status.error("This lot does not exist.");
         }
         CatalogueEntry currentLot = lotList.get(lotNumber);
         AuctionProcess process = new AuctionProcess(currentLot, interestedNodes.get(lotNumber), parameters,
-                                                    buyerInf, sellerInf);
+                                                    buyerInf, sellerInf, reservePrices);
         currentAuctions.put(lotNumber, process);
         logger.fine(startBanner("openAuction " + auctioneerName + " " + lotNumber));
         
@@ -146,9 +153,9 @@ public class AuctionHouseImp implements AuctionHouse {
             String buyerName,
             int lotNumber,
             Money bid) {
-
+        logger.finer("Entering");
         if(!currentAuctions.containsKey(lotNumber)) {
-            Status.error("This lot either does not exist or under auction process.");
+            return Status.error("This lot either does not exist or under auction process.");
         }
 
         logger.fine(startBanner("makeBid " + buyerName + " " + lotNumber + " " + bid));
@@ -159,6 +166,15 @@ public class AuctionHouseImp implements AuctionHouse {
     public Status closeAuction(
             String auctioneerName,
             int lotNumber) {
+        logger.finer("Entering");
+
+        if(!currentAuctions.containsKey(lotNumber)) {
+            return Status.error("This lot either does not exist or already closed");
+        }
+
+        logger.finer("Lot exists");
+        currentAuctions.remove(lotNumber);
+        lotList.remove(lotNumber);
         logger.fine(startBanner("closeAuction " + auctioneerName + " " + lotNumber));
 
         return Status.OK();

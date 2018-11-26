@@ -57,11 +57,14 @@ package auctionhouse;
 
 import java.util.HashMap;
 import javax.naming.Name;
-
+import java.util.logging.Logger;
 public class SellerInfo {
-    static HashMap<String, Seller> sellerInfo = new HashMap<>();
+    private static Logger logger = Logger.getLogger("auctionhouse");
+    HashMap<String, Seller> sellerInfo = new HashMap<>();
+    private HashMap<Integer, String> sellerAuctions = new HashMap<>();
 
     public Status registerNewSeller(String name, String bankAccount, String address) {
+        logger.finer("Entering");
         if (!sellerInfo.containsKey(name)) {
             sellerInfo.put(name, new Seller(name, bankAccount, address));
             return Status.OK();
@@ -71,6 +74,14 @@ public class SellerInfo {
 
     public String getAddress(String name) {
         return sellerInfo.get(name).address;
+    }
+    
+    public void addLottoSeller(int lotNumber, String name) {
+    	sellerAuctions.put(lotNumber, name);
+    }
+    
+    public String getName(int lotNumber) {
+    	return sellerAuctions.get(lotNumber);
     }
 }
 

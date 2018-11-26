@@ -53,6 +53,9 @@ import java.util.logging.Logger;
         }
         return false;
     }
+    public String getAddress(String name) {
+    	return buyerList.get(name).address;
+    }
 
     public String getBankAccount(String name) {
         logger.finer("Entering");

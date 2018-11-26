@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import auctionhouse.Status.Kind;
+
 /**
  * @author pbj
  *
@@ -146,12 +148,14 @@ public class AuctionHouseImp implements AuctionHouse {
             int lotNumber) {
         logger.finer("Entering");
         if (!lotList.containsKey(lotNumber)) {
-            Status.error("This lot does not exist.");
+            return Status.error("This lot does not exist.");
         }
-       
+       logger.finer("getting lot");
         CatalogueEntry currentLot = lotList.get(lotNumber);
+        logger.finer("Got lot");
         AuctionProcess process = new AuctionProcess(currentLot, buyerInf.interestedNodes.get(lotNumber), parameters,
-                                                    buyerInf, sellerInf, reservePrices);
+        		buyerInf, sellerInf, reservePrices, auctioneerName, auctioneerAddress);
+        logger.finer("Created auction process.");
         currentAuctions.put(lotNumber, process);
         logger.fine(startBanner("openAuction " + auctioneerName + " " + lotNumber));
         
@@ -180,13 +184,7 @@ public class AuctionHouseImp implements AuctionHouse {
         if(!currentAuctions.containsKey(lotNumber)) {
             return Status.error("This lot either does not exist or already closed");
         }
-
-        logger.finer("Lot exists");
-        currentAuctions.remove(lotNumber);
-        lotList.remove(lotNumber);
-        logger.fine(startBanner("closeAuction " + auctioneerName + " " + lotNumber));
-
-        return Status.OK();
+        return currentAuctions.get(lotNumber).closeBid();
     }
 
 }

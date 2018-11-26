@@ -82,6 +82,9 @@ public class SellerInfo {
     public String getName(int lotNumber) {
     	return sellerAuctions.get(lotNumber);
     }
+    public String getBankAccount(String name) {
+    	return sellerInfo.get(name).bankAccount;
+    }
 }
 
 class Seller{

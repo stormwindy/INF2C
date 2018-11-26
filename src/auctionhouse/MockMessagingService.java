@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class MockMessagingService implements MessagingService {
     private static Logger logger = Logger.getLogger("auctionhouse");
 
-    private Set<String> expectedEvents;
+    public Set<String> expectedEvents;
     private Set<String> actualEvents;
 
     public MockMessagingService() {
@@ -58,7 +58,6 @@ public class MockMessagingService implements MessagingService {
         String s = makeOpenedEventString(address, lotNumber);
         logger.finer(s); 
         actualEvents.add(s);
-        logger.finer(actualEvents.toString());
     }
     
     public void bidAccepted(String address, int lotNumber,Money amount) {
@@ -96,7 +95,6 @@ public class MockMessagingService implements MessagingService {
     }
     
     public void verify() {
-    	logger.finer(actualEvents.toString());
         assertEquals(expectedEvents, actualEvents);
         expectedEvents.clear();
         actualEvents.clear();
